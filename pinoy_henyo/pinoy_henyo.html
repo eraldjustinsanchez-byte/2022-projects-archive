@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Henyo Challenge</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b2447; 
+            color: #f0fdf4;
+            /* Full Screen & No Scrolling: ESSENTIAL FOR KIOSK MODE */
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            width: 95%;
+            max-width: 800px;
+            height: 95vh; /* Use 95% of the viewport height */
+            
+            background-color: rgba(25, 40, 60, 0.9);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+            border: 4px solid #fde047;
+            border-radius: 1.5rem;
+            padding: 1.5rem; /* Compressed padding */
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            align-items: center;
+            
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Ensure all structural elements don't shrink */
+        .header-section, .score-section, .timer-section, .control-section {
+            flex-shrink: 0;
+        }
+
+        #timerDisplay {
+            font-size: 7rem; 
+            font-weight: 900;
+            color: #ffffff; /* Start as white/neutral */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            transition: color 0.3s ease;
+            margin-top: 0.5rem; 
+            margin-bottom: 1rem; 
+        }
+        @media (max-width: 640px) {
+            #timerDisplay {
+                font-size: 4.5rem;
+                margin-top: 0.25rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        #wordDisplay {
+            min-height: 100px;
+            /* Adaptive Font Size: Start smaller for the initial prompt */
+            font-size: 2.5rem; 
+            font-weight: 800;
+            text-align: center;
+            color: #10b981; 
+            text-transform: uppercase;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+            flex-grow: 1; 
+            width: 100%;
+            background-color: #10b9811a;
+            border-radius: 0.75rem;
+            margin: 0;
+        }
+        
+        /* When game starts, we can make the font bigger for the actual words */
+        .game-active #wordDisplay {
+            font-size: 3.5rem;
+        }
+        
+        @media (max-width: 640px) {
+             #wordDisplay {
+                font-size: 2rem;
+            }
+        }
+
+        .control-button {
+            padding: 1rem 1.2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: 3px solid transparent;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            letter-spacing: 1px;
+            flex: 1;
+            margin: 0 0.5rem;
+            max-width: 250px;
+        }
+
+        /* Styles for buttons (Pass, Correct, Start) remain the same */
+        .pass-btn { background-color: #fde047; color: #854d0e; border-color: #fbbf24; }
+        .pass-btn:hover { background-color: #fcd34d; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(253, 224, 71, 0.6); }
+        .correct-btn { background-color: #10b981; color: white; border-color: #34d399; }
+        .correct-btn:hover { background-color: #059669; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.6); }
+        .start-btn { background-color: #ef4444; color: white; border-color: #f87171; }
+        .start-btn:hover { background-color: #dc2626; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.6); }
+        
+        /* Modal styles */
+        #messageBox {
+             z-index: 100;
+             pointer-events: auto;
+        }
+        
+        /* Modal content list styles */
+        .results-list {
+            max-height: 30vh;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Christmas Game Container -->
+    <div id="gameContainer" class="game-container">
+        <!-- Header Section -->
+        <div class="header-section w-full">
+            <h1 class="text-4xl font-extrabold pb-2 text-center text-green-500 border-b-2 border-green-700 w-full">
+                🎄 Pinoy Henyo 🎅
+            </h1>
+        </div>
+
+        <!-- Score Section -->
+        <div class="score-section text-xl font-semibold text-yellow-300 mt-2">
+            Correctly Guessed: <span id="scoreDisplay">0</span> / 10
+        </div>
+
+        <!-- Timer Section -->
+        <div id="timerDisplay" class="timer-section">
+            01:30
+        </div>
+
+        <!-- Word Display Area (Takes up all free space) -->
+        <div class="flex items-center justify-center w-full flex-grow my-2">
+            <p id="wordDisplay" class="shadow-inner border border-green-600">
+                PRESS START TO BEGIN
+            </p>
+        </div>
+
+        <!-- Message Box (Hidden by default, z-index 100) -->
+        <div id="messageBox" class="message-box hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+            <div id="messageContent" class="bg-gray-800 p-8 rounded-xl text-center shadow-2xl scale-100 transition-all duration-300 w-11/12 md:w-3/4 lg:w-1/2">
+                <!-- Content will be inserted by JS -->
+            </div>
+        </div>
+
+        <!-- Control Buttons Section -->
+        <div id="controlPanel" class="control-section w-full flex justify-center mt-2">
+            <!-- Initial Start Button -->
+            <button id="startButton" class="start-btn control-button w-full md:w-1/2 mx-auto">
+                START 90 SECOND ROUND
+            </button>
+
+            <!-- Game Control Buttons (Hidden initially) -->
+            <div id="gameButtons" class="hidden w-full flex justify-center space-x-4">
+                <button id="correctButton" class="correct-btn control-button flex-1">
+                    CORRECT (Score)
+                </button>
+                <button id="passButton" class="pass-btn control-button flex-1">
+                    PASS (Skip)
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+    // Fixed set of 10 words for the challenge
+    const initialWords = [
+        "NINONG", "MANITO", "PASTILLAS", "SIMBANG GABI", "PAROL",
+        "PUTO BUMBONG", "LECHON", "PAMASKO", "BIBINGKA", "REGALO"
+    ];
+    
+    const MAX_SCORE = 10;
+    
+    // DOM Elements
+    const gameContainer = document.getElementById('gameContainer');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const wordDisplay = document.getElementById('wordDisplay');
+    const startButton = document.getElementById('startButton');
+    const gameButtons = document.getElementById('gameButtons');
+    const correctButton = document.getElementById('correctButton');
+    const passButton = document.getElementById('passButton');
+    const messageBox = document.getElementById('messageBox');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    
+    // Game State Variables
+    const TOTAL_TIME = 90; // 1 minute and 30 seconds
+    let currentWords = []; // Array of words remaining to be guessed
+    let correctlyGuessed = []; // Words successfully guessed (for results display)
+    let wordIndex = 0;
+    let timeLeft = TOTAL_TIME;
+    let timerInterval = null;
+    let gameActive = false;
+    let correctCount = 0; // Tracks successfully guessed words
+
+    // Utility function to shuffle an array (Fisher-Yates)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Format seconds into MM:SS
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        const formattedMinutes = String(minutes).padStart(2, '0');
+        const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+        return `${formattedMinutes}:${formattedSeconds}`;
+    }
+
+    // --- Timer Logic ---
+    function updateTimerDisplay() {
+        timerDisplay.textContent = formatTime(timeLeft);
+        
+        // Visual feedback for low time
+        if (timeLeft <= 10) {
+            timerDisplay.classList.add('text-yellow-400', 'animate-pulse');
+            timerDisplay.classList.remove('text-red-500');
+        } else if (timeLeft <= 30) {
+            timerDisplay.classList.add('text-red-500');
+            timerDisplay.classList.remove('text-yellow-400', 'animate-pulse');
+        } else {
+            timerDisplay.classList.remove('text-red-500', 'text-yellow-400', 'animate-pulse');
+        }
+    }
+
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function startTimer() {
+        stopTimer(); 
+        // Continuous timer: runs until 0
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+
+            if (timeLeft <= 0) {
+                stopTimer();
+                showGameOverMessage(false); // Game over by time
+            }
+        }, 1000);
+    }
+
+    // --- Game Flow Logic ---
+
+    function startGame() {
+        if (gameActive) return;
+
+        // Start with a fresh, shuffled set of words
+        currentWords = [...initialWords];
+        shuffleArray(currentWords); 
+        
+        wordIndex = 0;
+        correctCount = 0;
+        correctlyGuessed = []; // Reset guessed words
+        timeLeft = TOTAL_TIME;
+        gameActive = true;
+        
+        // Apply class for larger font size once the game starts
+        gameContainer.classList.add('game-active');
+
+        startButton.classList.add('hidden');
+        gameButtons.classList.remove('hidden');
+
+        loadCurrentWord();
+        startTimer();
+    }
+    
+    function loadCurrentWord() {
+        // Check if we hit the win condition (all words guessed)
+        if (currentWords.length === 0) {
+              stopTimer();
+              showGameOverMessage(true);
+              return;
+        }
+
+        // Loop logic: If wordIndex hits the end, go back to 0
+        // Use the length of the *remaining* words array
+        wordIndex = wordIndex % currentWords.length; 
+
+        const currentWord = currentWords[wordIndex];
+        
+        // Display the word
+        wordDisplay.textContent = currentWord;
+        scoreDisplay.textContent = `${correctCount}`;
+    }
+
+    function nextWord(isCorrect) {
+        if (!gameActive || timeLeft <= 0 || currentWords.length === 0) return;
+        
+        const wordToProcess = currentWords[wordIndex]; 
+
+        if (isCorrect) {
+            // 1. Increment score
+            correctCount++;
+            
+            // 2. Track the word as guessed
+            correctlyGuessed.push(wordToProcess); 
+            
+            // 3. Remove the correctly guessed word from the array
+            currentWords.splice(wordIndex, 1);
+            
+            // wordIndex remains the same, as the next word shifted into its spot.
+        } else {
+            // If passed, just move to the next index (word stays in the array)
+            wordIndex++;
+        }
+        
+        loadCurrentWord(); // Load the next word
+    }
+
+    // --- Modal/Message Handlers ---
+    
+    // NOTE: Updated showMessage to accept HTML for the body
+    function showMessage(title, bodyHTML, hideButtons) {
+        gameActive = false;
+        stopTimer(); 
+        
+        const messageContent = document.getElementById('messageContent');
+        
+        // Content for the final score display
+        messageContent.innerHTML = `
+            <h2 class="text-4xl font-extrabold mb-4 text-red-500">${title}</h2>
+            ${bodyHTML}
+            ${!hideButtons ? '' : '<p class="text-sm mt-4 text-gray-500">Refresh the browser to start a new game.</p>'}
+        `;
+        messageBox.classList.remove('hidden');
+        
+        // If the final score display is shown, disable closing the message box
+        if (hideButtons) {
+            messageBox.onclick = (e) => e.stopPropagation(); 
+        }
+    }
+    
+    function showGameOverMessage(hasWon) {
+        gameActive = false;
+        
+        let title, messageHTML;
+        
+        // If lost by time, the remaining words in currentWords are the missed words.
+        const missedWords = currentWords; 
+        
+        // Build the results list HTML
+        const resultsHTML = `
+            <div class="text-left w-full mx-auto mt-6 p-4 bg-gray-700/50 rounded-lg results-list">
+                <div class="mb-4">
+                    <h3 class="text-2xl font-bold text-green-400 mb-1">✅ Correctly Guessed (${correctlyGuessed.length}):</h3>
+                    <ul class="list-none text-lg text-gray-200 space-y-1">
+                        ${correctlyGuessed.length > 0 ? correctlyGuessed.map(w => `<li class="border-b border-gray-600 last:border-b-0 py-1 px-2 rounded bg-gray-800">${w}</li>`).join('') : '<li class="text-yellow-400">None</li>'}
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-red-400 mb-1">❌ Missed Words (${missedWords.length}):</h3>
+                    <ul class="list-none text-lg text-gray-200 space-y-1">
+                        ${missedWords.length > 0 ? missedWords.map(w => `<li class="border-b border-gray-600 last:border-b-0 py-1 px-2 rounded bg-gray-800">${w}</li>`).join('') : '<li class="text-yellow-400">None! You got them all!</li>'}
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        if (hasWon) {
+             title = "CHALLENGE COMPLETE! YOU WON!";
+             const timeTaken = TOTAL_TIME - timeLeft;
+             const timeDisplay = formatTime(timeTaken);
+             messageHTML = `
+                <p class="text-xl mb-4 text-yellow-300 font-semibold">Congratulations! You guessed all 10 words!</p>
+                <p class="text-lg mb-4 text-gray-300">Time taken: <span class="text-white font-bold">${timeDisplay}</span></p>
+                ${resultsHTML}
+             `;
+        } else {
+             title = "TIME'S UP! GAME OVER!";
+             messageHTML = `
+                <p class="text-xl mb-4 text-yellow-300 font-semibold">You correctly guessed ${correctCount} out of 10 words before time ran out.</p>
+                ${resultsHTML}
+             `;
+        }
+            
+        showMessage(
+            title,
+            messageHTML, // Pass the HTML string
+            true 
+        );
+        
+        // Hide the game buttons after game ends
+        gameButtons.classList.add('hidden');
+        startButton.classList.add('hidden');
+    }
+
+    // --- Event Listeners ---
+    startButton.addEventListener('click', startGame);
+    
+    correctButton.addEventListener('click', () => nextWord(true));
+    passButton.addEventListener('click', () => nextWord(false));
+
+    // Initialize the timer display
+    updateTimerDisplay();
+    
+    </script>
+</body>
+</html>

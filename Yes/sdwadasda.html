@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="asdasadada.js"></script>
+    <link rel="stylesheet" href="asdsadadad.css">
+</head>
+<body>
+
+    <p id="text">Mahal mo ba ako?</p>
+    <button onclick="yes()" id="yes">Yes</button>
+    <button class="btn" id="no">No</button>
+    <script>
+        var btn = document.querySelector(".btn");
+        var position;
+        btn.addEventListener("mouseover", function(){
+            position ? (position = 0) : (position = 150);
+            btn.style.transform = `translate(${position}px, 0px)`;
+            btn.style.transition = "all 0.3s ease";
+        })
+
+        function yes(){
+
+            let x = document.getElementById("text");
+            if(x.innerHTML = "Mahal mo ba ako?"){
+
+                x.innerHTML = "Mahal din kita <3";
+            }
+}
+    </script>
+    
+        
+</body>
+</html>

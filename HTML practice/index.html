@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Semantic Blog</title>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Welcome to My Blog</h1>
+        <nav>
+            <ul>
+                <li><a href="#home" target="_self">Home</a></li>
+                <li><a href="#about" target="_self">About</a></li>
+                <li><a href="#contact" target="_self">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content Section -->
+    <main>
+        <!-- Blog Post Section -->
+        <section id="blog-posts">
+            <!-- Article 1 -->
+            <article>
+                <h2>My First Blog Post</h2>
+                <p>Posted on <time datetime="2025-04-18">April 18, 2025</time></p>
+                <img src="image1.jpg" alt="A beautiful sunset" width="600" height="400">
+                <p>This is the content of my first blog post. Here I share my thoughts about the sunset. It's an amazing view!</p>
+                
+                <!-- Table inside Article -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Location</td>
+                            <td>Beach</td>
+                        </tr>
+                        <tr>
+                            <td>Time</td>
+                            <td>6:00 PM</td>
+                        </tr>
+                        <tr>
+                            <td>Weather</td>
+                            <td>Clear</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>Here’s a summary of the sunset experience.</p>
+            </article>
+
+            <!-- Article 2 -->
+            <article>
+                <h2>Exploring Nature</h2>
+                <p>Posted on <time datetime="2025-04-16">April 16, 2025</time></p>
+                <img src="nature.jpg" alt="A beautiful forest landscape" width="600" height="400">
+                <p>In this post, I write about my nature trip. The experience of walking through a forest is so peaceful and grounding.</p>
+
+                <figure>
+                    <img src="forest.jpg" alt="Path through the forest" width="600" height="400">
+                    <figcaption>Walking through the forest path</figcaption>
+                </figure>
+
+                <p>I would recommend everyone to experience the beauty of nature firsthand.</p>
+            </article>
+        </section>
+
+        <!-- Sidebar Section -->
+        <aside>
+            <h3>About Me</h3>
+            <p>I'm an outdoor enthusiast and blogger who loves to capture beautiful moments in nature.</p>
+        </aside>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <section id="contact">
+            <h3>Contact Me</h3>
+            <form action="#" method="POST">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="4" required></textarea>
+
+                <button type="submit">Send Message</button>
+            </form>
+        </section>
+    </footer>
+
+</body>
+</html>
